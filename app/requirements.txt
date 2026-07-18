@@ -1,3 +1,4 @@
 fastapi
 pydantic
 authx
+prometheus_fastapi_instrumentator

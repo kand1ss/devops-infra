@@ -49,7 +49,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./config.alloy:/etc/alloy/config.alloy:ro
-      - alloy-data:/var/lib/alloy/data
+      - alloy_data:/var/lib/alloy/data
     command:
       - run
       - /etc/alloy/config.alloy

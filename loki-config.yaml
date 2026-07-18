@@ -1,4 +1,4 @@
-auto_enabled: false
+auth_enabled: false
 
 server:
   http_listen_port: 3100
@@ -29,7 +29,7 @@ schema_config:
         period: 24h
 
 limits_config:
-  retention_config: 720h
+  retention_period: 720h
   ingestion_rate_mb: 16
   ingestion_burst_size_mb: 32
   max_query_series: 5000

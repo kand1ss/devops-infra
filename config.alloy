@@ -53,6 +53,6 @@ loki.write "default" {
   }
 
   external_labels = {
-    host = env("HOSTNAME")
+    host = env("HOSTNAME"),
   }
 }

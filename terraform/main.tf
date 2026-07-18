@@ -36,6 +36,11 @@ data "hcloud_ssh_key" "default_key" {
   name = "Default"
 }
 
+variable "github_token" {
+  type      = string
+  sensitive = true
+}
+
 resource "hcloud_server" "app-server" {
   name        = "app-server"
   image       = "ubuntu-24.04"
@@ -45,6 +50,10 @@ resource "hcloud_server" "app-server" {
   ssh_keys = [
     data.hcloud_ssh_key.default_key.id
   ]
+
+  user_data = templatefile("${path.module}/cloud-init.tpl", {
+    github_token = var.github_token
+  })
 
   firewall_ids = [
     hcloud_firewall.firewall.id

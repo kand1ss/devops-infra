@@ -1,6 +1,8 @@
 volumes:
   grafana_data:
   prometheus_data:
+  alloy_data:
+  loki_data:
 
 services:
   app:
@@ -11,6 +13,23 @@ services:
     ports:
       - "8000:8000"
 
+  loki:
+    image: grafana/loki:latest
+    user: "10001:10001"
+    container_name: loki
+    restart: unless-stopped
+    volumes:
+      - ./loki-config.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/config.yaml
+    ports:
+      - "3100:3100"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3100/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -22,6 +41,21 @@ services:
       - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config.alloy:/etc/alloy/config.alloy:ro
+      - alloy-data:/var/lib/alloy/data
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+    ports:
+      - "12345:12345"
 
   prometheus:
     image: prom/prometheus:latest

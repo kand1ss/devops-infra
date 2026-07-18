@@ -1,0 +1,58 @@
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex = "/(.*)"
+    target_label = "container"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label = "compose_service"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label = "compose_project"
+  }
+
+  rule {
+    source_labels = ["container"]
+    regex = "alloy"
+    action = "drop"
+  }
+}
+
+loki.source.docker "default" {
+  host = "unix:///var/run/docker.sock"
+  targets = discovery.relabel.containers.output
+  labels = {tool = "alloy"}
+  forward_to = [loki.process.containers.receiver]
+}
+
+loki.process "containers" {
+  forward_to = [loki.write.default.receiver]
+
+  stage.json {
+    expressions = {level = "level"}
+  }
+
+  stage.labels {
+    values = {level = ""}
+  }
+}
+
+loki.write "default" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+
+  external_labels = {
+    host = env("HOSTNAME")
+  }
+}

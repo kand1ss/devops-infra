@@ -125,7 +125,7 @@ services:
 
 
   prometheus:
-    image: prom/prometheus:3.9.1
+    image: prom/prometheus:v3
     container_name: prometheus
     restart: unless-stopped
     expose:

@@ -1,0 +1,148 @@
+volumes:
+  grafana_data:
+  prometheus_data:
+  alloy_data:
+  loki_data:
+  shortener_pgdata:
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+
+services:
+  shortener-db:
+    image: postgres:16-alpine
+    container_name: shortener_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: shortener_service
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+      POSTGRES_DB: shortener_db
+    secrets:
+      - db_password
+    volumes:
+      - shortener_pgdata:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shortener_service -d shortener_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  shortener:
+    build:
+      context: ./apps/shortener
+    container_name: shortener-service
+    restart: unless-stopped
+    environment:
+      BASE_URL: https://shortclick.duckdns.org
+      DB_USER: shortener_service
+      DB_PASSWORD_FILE: /run/secrets/db_password
+      DB_NAME: shortener_db
+      DB_HOST: shortener-db
+      DB_PORT: 5432
+    expose:
+      - "8000"
+    secrets:
+      - db_password
+    depends_on:
+      shortener-db:
+        condition: service_healthy
+    healthcheck:                     
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8000/healthz"]  
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+
+  loki:
+    image: grafana/loki:3.7.0
+    user: "10001:10001"
+    container_name: loki
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/config.yaml
+    expose:
+      - "3100"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3100/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+
+  prometheus:
+    image: prom/prometheus:3.9.1
+    container_name: prometheus
+    restart: unless-stopped
+    expose:
+      - "9090"
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    healthcheck:        
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      cadvisor:
+        condition: service_started
+      shortener:
+        condition: service_healthy
+
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
+    container_name: cadvisor
+    restart: unless-stopped
+    expose:
+      - "8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run/:/var/run:rw
+      - /sys/:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+    
+  grafana:
+    image: grafana/grafana:13.1.0
+    container_name: grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+
+
+  alloy:
+    image: grafana/alloy:1.17.0
+    container_name: alloy
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./monitoring/config.alloy:/etc/alloy/config.alloy:ro
+      - alloy_data:/var/lib/alloy/data
+    command:
+      - run
+      - /etc/alloy/config.alloy
+      - --storage.path=/var/lib/alloy/data
+    ports:
+      - "127.0.0.1:12345:12345"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy

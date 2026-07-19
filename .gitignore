@@ -6,3 +6,5 @@
 *.log
 **/.terraform
 **/.terraform.lock.hcl
+**/.venv
+secrets/

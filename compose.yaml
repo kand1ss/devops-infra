@@ -177,7 +177,7 @@ services:
 
 
   alloy:
-    image: grafana/alloy:1.17.0
+    image: grafana/alloy:v1.17.1
     container_name: alloy
     restart: unless-stopped
     volumes:

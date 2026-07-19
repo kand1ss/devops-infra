@@ -42,19 +42,6 @@ apt.packages(
     _sudo=True,
 )
 
-files.put(
-    name="Upload Tailscale serve config",
-    src=os.path.join(CURRENT_DIR, "files", "tailscale_serve.json"),
-    dest="/etc/tailscale/serve.json",
-    _sudo=True,
-)
-
-server.shell(
-    name="Apply Tailscale serve config",
-    commands=["tailscale serve --config=/etc/tailscale/serve.json"],
-    _sudo=True,
-)
-
 server.shell(
     name="Add Docker Repository",
     commands=[

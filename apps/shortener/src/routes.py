@@ -6,7 +6,7 @@ from schemas import CreateLink, CreateLinkOut
 from models import Link
 from config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, text
 import services
 import logging
 
@@ -23,7 +23,7 @@ async def readiness(
     session: AsyncSession = Depends(get_session)
 ):
     try:
-        await session.execute("SELECT 1")
+        await session.execute(text("SELECT 1"))
     except Exception:
         return JSONResponse(status_code=503, content={"status": "not ready"})
     return {"status": "ready"}

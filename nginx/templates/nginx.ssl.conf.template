@@ -1,0 +1,67 @@
+limit_req_zone $binary_remote_addr zone=api_limit:10m rate=10r/s;
+
+server {
+    listen 80 default_server;
+    server_name _;
+
+    location = /healthz {
+        access_log off;
+        return 200 "ok\n";
+        add_header Content-Type text/plain;
+    }
+
+    location / {
+        return 444;
+    }
+}
+
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name ${DOMAIN};
+    access_log /var/log/nginx/access.log combined;
+    access_log /dev/stdout combined;
+    http2 on;
+
+    server_tokens off;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    client_max_body_size 10M;
+
+    ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    underscores_in_headers on;
+
+    location / {
+        limit_req zone=api_limit burst=20 nodelay;
+        proxy_pass http://shortener:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~* (\.env|\.git|\.svn|\.ssh|\.vscode|\.aws|wp-admin|wp-login|wp-config|xmlrpc\.php|phpinfo\.php|actuator|zzcanary|\.bash_history|_vti_pvt|docker-compose\.ya?ml|\.npmrc|id_rsa|id_ed25519|id_ecdsa|server\.key|secrets\.json|config\.(php|xml|json)|database.*\.sql|backup\.(sql|zip|tar\.gz)|dump\.sql|storage/logs) {
+        access_log /var/log/nginx/access.log combined;
+        return 403;
+    }
+}

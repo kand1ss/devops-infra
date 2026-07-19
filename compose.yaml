@@ -10,6 +10,55 @@ secrets:
     file: ./secrets/db_password.txt
 
 services:
+  nginx:
+    image: nginx:1.31.3-alpine
+    container_name: nginx
+    restart: always
+    entrypoint: ["/entrypoint.sh"]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/entrypoint.sh:/entrypoint.sh:ro
+      - ./nginx/templates:/etc/nginx/templates:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./logs/nginx:/var/log/nginx
+    environment:
+      DOMAIN: shortclick.duckdns.org
+
+  certbot:
+    image: certbot/certbot:v5.7.0
+    container_name: certbot
+    restart: unless-stopped
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    environment:
+      DOMAIN: shortclick.duckdns.org
+      CERTBOT_EMAIL: yaroslav.varichenko@gmail.com
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        if [ ! -f "/etc/letsencrypt/live/${DOMAIN}/fullchain.pem" ]; then
+          echo "[certbot] No certificate found, requesting initial issuance"
+          certbot certonly --webroot -w /var/www/certbot \
+            -d "${DOMAIN}" \
+            --email "${CERTBOT_EMAIL}" \
+            --agree-tos --non-interactive --no-eff-email
+        fi
+        trap exit TERM
+        while :; do
+          certbot renew --webroot -w /var/www/certbot --quiet
+          sleep 12h
+        done
+      - sh    
+    depends_on:
+      - nginx
+
+
   shortener-db:
     image: postgres:16-alpine
     container_name: shortener_db

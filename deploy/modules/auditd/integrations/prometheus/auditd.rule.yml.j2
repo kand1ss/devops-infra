@@ -1,0 +1,18 @@
+groups:
+  - name: security_audit
+    rules:
+      - alert: RootExecDetected
+        expr: increase(audit_events_total{key="root_exec"}[5m]) > 10
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Abnormal number of root execve calls on {{ $labels.instance }}"
+
+      - alert: CriticalFileModified
+        expr: increase(audit_events_total{key=~"identity_change|sudoers_change|shadow_change"}[1m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical system file modified ({{ $labels.key }})"

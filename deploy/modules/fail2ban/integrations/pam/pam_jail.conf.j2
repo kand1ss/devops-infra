@@ -1,0 +1,8 @@
+# /etc/fail2ban/jail.d/auditd-pam.conf
+[auditd-pam]
+enabled = true
+filter = auditd-pam
+logpath = /var/log/audit/audit.log
+maxretry = 3
+bantime = 3600
+action = %(action_)s

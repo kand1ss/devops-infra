@@ -7,4 +7,5 @@
 **/.terraform
 **/.terraform.lock.hcl
 **/.venv
+**/.env
 secrets/

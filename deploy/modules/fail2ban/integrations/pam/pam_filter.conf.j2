@@ -1,0 +1,4 @@
+# /etc/fail2ban/filter.d/auditd-pam.conf
+[Definition]
+failregex = ^type=USER_AUTH.*acct="\S+".*exe="/usr/sbin/sshd".*res=failed.*addr=<HOST>
+ignoreregex =

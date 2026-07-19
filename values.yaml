@@ -1,0 +1,6 @@
+domain: shortclick.duckdns.org
+shortener:
+  db:
+    user: shortener_service
+    name: shortener_db
+certbot_email: yaroslav.varichenko@gmail.com

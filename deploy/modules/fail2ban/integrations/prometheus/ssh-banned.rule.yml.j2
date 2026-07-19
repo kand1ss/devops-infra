@@ -1,0 +1,7 @@
+# alert.rules.yml 
+- alert: SSHBruteForceDetected
+  expr: increase(fail2ban_banned_total{jail="sshd"}[10m]) > 0
+  labels:
+    severity: warning
+  annotations:
+    summary: "fail2ban banned an IP for SSH brute-force on {{ $labels.instance }}"

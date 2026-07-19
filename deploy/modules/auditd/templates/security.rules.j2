@@ -1,0 +1,6 @@
+# /etc/audit/rules.d/security.rules
+-w /etc/passwd -p wa -k identity_change
+-w /etc/sudoers -p wa -k sudoers_change
+-w /etc/shadow -p wa -k shadow_change
+
+-a always,exit -F arch=b64 -S execve -F euid=0 -k root_exec

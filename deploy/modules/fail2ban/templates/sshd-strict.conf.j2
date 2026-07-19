@@ -1,0 +1,15 @@
+# /etc/fail2ban/jail.d/sshd-strict.conf
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+maxretry = 3
+findtime = 600
+bantime = 3600
+bantime.increment = true    
+bantime.factor = 2
+bantime.maxtime = 86400
+
+action = %(action_)s

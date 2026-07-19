@@ -25,7 +25,7 @@ services:
       - ./certbot/conf:/etc/letsencrypt:ro
       - ./logs/nginx:/var/log/nginx
     environment:
-      DOMAIN: shortclick.duckdns.org
+      DOMAIN: ${DOMAIN}
 
   certbot:
     image: certbot/certbot:v5.7.0
@@ -35,8 +35,8 @@ services:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
     environment:
-      DOMAIN: shortclick.duckdns.org
-      CERTBOT_EMAIL: yaroslav.varichenko@gmail.com
+      DOMAIN: ${DOMAIN}
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL}
     entrypoint:
       - sh
       - -c
@@ -64,9 +64,9 @@ services:
     container_name: shortener_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: shortener_service
+      POSTGRES_USER: ${SHORTENER_DB_USER}
       POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-      POSTGRES_DB: shortener_db
+      POSTGRES_DB: ${SHORTENER_DB_NAME}
     secrets:
       - db_password
     volumes:
@@ -86,10 +86,10 @@ services:
     container_name: shortener-service
     restart: unless-stopped
     environment:
-      BASE_URL: https://shortclick.duckdns.org
-      DB_USER: shortener_service
+      BASE_URL: https://${DOMAIN}
+      DB_USER: ${SHORTENER_DB_USER}
       DB_PASSWORD_FILE: /run/secrets/db_password
-      DB_NAME: shortener_db
+      DB_NAME: ${SHORTENER_DB_NAME}
       DB_HOST: shortener-db
       DB_PORT: 5432
     expose:

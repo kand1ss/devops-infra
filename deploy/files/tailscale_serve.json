@@ -1,0 +1,16 @@
+{
+  "TCP": {
+    "443": {
+      "HTTPS": true
+    }
+  },
+  "Web": {
+    "test-infrastructure-server.danio-hue.ts.net:443": {
+      "Handlers": {
+        "/grafana": {
+          "Proxy": "http://127.0.0.1:3000"
+        },
+      }
+    }
+  }
+}

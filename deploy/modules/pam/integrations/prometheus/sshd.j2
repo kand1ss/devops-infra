@@ -1,0 +1,28 @@
+# /etc/pam.d/sshd 
+#%PAM-1.0
+auth       [success=1 default=ignore]  pam_unix.so
+auth       optional     pam_exec.so seteuid {{ script_path }}
+auth       requisite    pam_deny.so
+auth       required     pam_permit.so
+auth       optional     pam_cap.so
+
+account    required     pam_nologin.so
+account    required     pam_unix.so
+account    required     pam_permit.so
+account    optional     pam_ck_connector.so
+
+password   required     pam_unix.so obscure sha512
+
+session    required     pam_selinux.so close
+session    required     pam_loginuid.so
+session    optional     pam_keyinit.so force revoke
+session    required     pam_limits.so
+session    required     pam_env.so readenv=1
+session    required     pam_env.so readenv=1 envfile=/etc/default/locale
+@include common-session
+session    optional     pam_motd.so motd=/run/motd.dynamic
+session    optional     pam_motd.so noupdate
+session    optional     pam_mail.so standard
+session    required     pam_limits.so
+session    required     pam_unix.so
+session    optional     pam_ck_connector.so

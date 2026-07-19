@@ -1,0 +1,7 @@
+# /etc/fail2ban/action.d/ufw.conf
+[Definition]
+actionstart =
+actionstop =
+actioncheck =
+actionban = ufw insert 1 deny from <ip> to any
+actionunban = ufw delete deny from <ip> to any

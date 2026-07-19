@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from prometheus_fastapi_instrumentator import Instrumentator
-from routs import router
+from routes import router
 
 app = FastAPI(name="Shortener Service")
 app.include_router(router)

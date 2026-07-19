@@ -1,4 +1,4 @@
 pyinfra
-dotenv
+python-dotenv
 jinja2
 pyyaml

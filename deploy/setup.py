@@ -9,6 +9,8 @@ SSH_PUBLIC_KEY = os.getenv(
     "SSH_PUBLIC_KEY", os.path.expanduser("~/.ssh/id_rsa.pub")
 )
 TAILSCALE_AUTHKEY = os.getenv("TAILSCALE_AUTHKEY")
+if not TAILSCALE_AUTHKEY:
+    raise RuntimeError("TAILSCALE_AUTHKEY env var is required")
 
 SUDO_PASSWORD_HASH = os.getenv("SUDO_PASSWORD_HASH")
 if not SUDO_PASSWORD_HASH:
@@ -36,29 +38,6 @@ apt.packages(
         "curl",
         "docker.io",
         "auditd",
-    ],
-    _sudo=True,
-)
-
-server.user(
-    name="Set password for sudo user",
-    user=NEW_USER,
-    password=SUDO_PASSWORD_HASH,
-    _sudo=True,
-)
-
-server.shell(
-    name="Install Tailscale",
-    commands=["curl -fsSL https://tailscale.com/install.sh | sh"],
-    _sudo=True,
-)
-
-server.shell(
-    name="Join tailnet",
-    commands=[
-        f"tailscale up --authkey={TAILSCALE_AUTHKEY} "
-        "--hostname=test-infrastructure-server "        
-        "--accept-dns=true"
     ],
     _sudo=True,
 )
@@ -99,6 +78,13 @@ server.user(
     shell="/bin/bash",
     ensure_home=True,
     groups=["sudo", "docker"],
+    _sudo=True,
+)
+
+server.user(
+    name="Set password for sudo user",
+    user=NEW_USER,
+    password=SUDO_PASSWORD_HASH,
     _sudo=True,
 )
 

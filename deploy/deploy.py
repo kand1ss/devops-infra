@@ -7,6 +7,10 @@ load_dotenv()
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
+REMOTE_REPO_NAME = os.getenv("REMOTE_REPO_NAME")
+if not REMOTE_REPO_NAME:
+    raise RuntimeError("REMOTE_REPO_NAME env var is required")
+
 REMOTE_PROJECT_DIR = "/opt/infrastructure"
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 if not GITHUB_TOKEN:
@@ -22,7 +26,8 @@ server.shell(
             cd {REMOTE_PROJECT_DIR} && git pull
         else
             echo "Cloning repository..."
-            git clone https://{GITHUB_TOKEN}@github.com/kand1ss/1year-gift.git {REMOTE_PROJECT_DIR}
+            git clone https://{GITHUB_TOKEN}@github.com/kand1ss/{REMOTE_REPO_NAME}.git {REMOTE_PROJECT_DIR}
+            cd {REMOTE_PROJECT_DIR} && git remote set-url origin https://github.com/kand1ss/{REMOTE_REPO_NAME}.git
         fi
         """
     ],

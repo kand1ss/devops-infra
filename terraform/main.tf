@@ -35,7 +35,7 @@ data "hcloud_ssh_key" "default_key" {
   name = "Default"
 }
 
-variable "github_token" {
+variable "tskey_auth" {
   type      = string
   sensitive = true
 }
@@ -46,13 +46,13 @@ resource "hcloud_server" "app-server" {
   server_type = "cx23"
   location    = "nbg1"
 
+  user_data = templatefile("${path.module}/cloud-init.tpl", {
+    tailscale_authkey = var.tskey_auth
+  })
+
   ssh_keys = [
     data.hcloud_ssh_key.default_key.id
   ]
-
-  user_data = templatefile("${path.module}/cloud-init.tpl", {
-    github_token = var.github_token
-  })
 
   firewall_ids = [
     hcloud_firewall.firewall.id

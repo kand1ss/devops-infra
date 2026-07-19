@@ -6,4 +6,3 @@ prometheus_fastapi_instrumentator
 sqlalchemy
 asyncpg
 alembic
-secrets

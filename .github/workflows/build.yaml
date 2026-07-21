@@ -10,7 +10,7 @@ jobs:
   detect-changes:
     runs-on: ubuntu-latest
     outputs:
-      apps: ${{ steps.filter.outputs.changes }}
+      apps: ${{ steps.filter.outputs.changes != '' && steps.filter.outputs.changes || '[]' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -100,11 +100,21 @@ jobs:
               yaml.safe_dump(data, f, sort_keys=False)
           "
 
-      - name: Commit and push changes (Verified)
-        uses: stefanzweifel/git-auto-commit-action@v5
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
         with:
-          commit_message: "chore(config): bump changed apps tags to ${{ github.sha }} [skip ci]"
-          file_pattern: "values.yaml"
-          commit_author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          commit-message: "chore(config): bump tags"
+          title: "chore(config): bump image tags to ${{ github.sha }}"
+          branch: "chore/auto-bump-tags"
+          sign-commits: true
+          add-paths: |
+              values.yaml
+              apps/*/values.yaml

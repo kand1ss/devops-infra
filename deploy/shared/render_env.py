@@ -7,6 +7,7 @@ def render_yaml(read_from: Path, save_to: Path):
     env_template = Template("""
 DOMAIN={{ domain }}
 CERTBOT_EMAIL={{ certbot_email }}
+SHORTENER_IMAGE_TAG={{ shortener.image_tag }}
 SHORTENER_DB_USER={{ shortener.db.user }}
 SHORTENER_DB_NAME={{ shortener.db.name }}
     """)

@@ -81,6 +81,7 @@ services:
 
 
   shortener:
+    image: ghcr.io/kand1ss/shortener:${SHORTENER_IMAGE_TAG}
     build:
       context: ./apps/shortener
     container_name: shortener-service

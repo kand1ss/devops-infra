@@ -1,5 +1,6 @@
 domain: shortclick.duckdns.org
 shortener:
+  image_tag: "latest"
   db:
     user: shortener_service
     name: shortener_db

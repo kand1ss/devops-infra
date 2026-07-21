@@ -1,7 +1,8 @@
 from sqlalchemy import URL
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import SecretStr 
+from pydantic import SecretStr
 from pathlib import Path
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
@@ -30,12 +31,12 @@ class Settings(BaseSettings):
             database=self.db_name,
         )
 
-
     def _resolve_password(self) -> str:
         if self.db_password_file and self.db_password_file.exists():
             return self.db_password_file.read_text().strip()
         if self.db_password:
             return self.db_password.get_secret_value()
         raise RuntimeError("No DB password provided via file or env var")
+
 
 settings = Settings()

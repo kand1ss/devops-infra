@@ -13,9 +13,6 @@ instrumentator = Instrumentator(
     excluded_handlers=[".*admin.*", "/metrics"],
     env_var_name="ENABLE_METRICS",
     inprogress_name="inprogress",
-    inprogress_labels=True
+    inprogress_labels=True,
 )
-_ = instrumentator.instrument(
-    app,
-    metric_namespace="shortener-service"
-).expose(app)
+_ = instrumentator.instrument(app, metric_namespace="shortener-service").expose(app)

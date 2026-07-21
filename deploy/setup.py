@@ -5,9 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 NEW_USER = os.getenv("USER", "default")
-SSH_PUBLIC_KEY = os.getenv(
-    "SSH_PUBLIC_KEY", os.path.expanduser("~/.ssh/id_rsa.pub")
-)
+SSH_PUBLIC_KEY = os.getenv("SSH_PUBLIC_KEY", os.path.expanduser("~/.ssh/id_rsa.pub"))
 
 SUDO_PASSWORD_HASH = os.getenv("SUDO_PASSWORD_HASH")
 if not SUDO_PASSWORD_HASH:
@@ -75,7 +73,7 @@ server.user(
 files.line(
     name="Allow sudo with cached timestamp",
     path=f"/etc/sudoers.d/{NEW_USER}",
-    line=f"{NEW_USER} ALL=(ALL) ALL",   
+    line=f"{NEW_USER} ALL=(ALL) ALL",
     _sudo=True,
 )
 

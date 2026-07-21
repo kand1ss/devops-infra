@@ -13,15 +13,14 @@ import logging
 logger = logging.getLogger("api_logger")
 router = APIRouter()
 
+
 @router.get("/healthz", status_code=status.HTTP_200_OK)
 async def liveness():
     return {"status": "alive"}
 
 
 @router.get("/readyz")
-async def readiness(
-    session: AsyncSession = Depends(get_session)
-):
+async def readiness(session: AsyncSession = Depends(get_session)):
     try:
         await session.execute(text("SELECT 1"))
     except Exception:
@@ -29,24 +28,22 @@ async def readiness(
     return {"status": "ready"}
 
 
-@router.post("/short", status_code=status.HTTP_201_CREATED, response_model=CreateLinkOut)
+@router.post(
+    "/short", status_code=status.HTTP_201_CREATED, response_model=CreateLinkOut
+)
 async def create_shorted_link(
-    data: CreateLink,
-    session: AsyncSession = Depends(get_session)
+    data: CreateLink, session: AsyncSession = Depends(get_session)
 ):
     logger.info("Requested shorted link creation for url: %s", data.original_url)
     short_code = await services.LinkService(session).create_link(str(data.original_url))
     return CreateLinkOut(
         original_url=data.original_url,
-        shorted_url=HttpUrl(f"{settings.normalized_base_url}/{short_code}")
+        shorted_url=HttpUrl(f"{settings.normalized_base_url}/{short_code}"),
     )
 
 
 @router.post("/{short_hash}", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
-async def redirect(
-    short_hash: str,
-    session: AsyncSession = Depends(get_session)
-):
+async def redirect(short_hash: str, session: AsyncSession = Depends(get_session)):
     query = select(Link).where(Link.short_hash == short_hash)
     result = await session.execute(query)
     link = result.scalar_one_or_none()

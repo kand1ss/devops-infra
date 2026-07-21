@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import secrets
 import logging
 
+
 class LinkService:
     def __init__(self, session: AsyncSession):
         self.session: AsyncSession = session
@@ -17,12 +18,10 @@ class LinkService:
         self.session.add(new_link)
         try:
             await self.session.commit()
-        except IntegrityError as e:
+        except IntegrityError:
             await self.session.rollback()
             self.logger.warning("Hash already exists. Trying another")
             return await self.create_link(original)
-        
+
         await self.session.refresh(new_link)
         return random_hash
-
-

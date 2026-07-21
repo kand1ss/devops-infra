@@ -40,6 +40,11 @@ variable "tskey_auth" {
   sensitive = true
 }
 
+variable "ts_host" {
+  type      = string
+  sensitive = false
+}
+
 resource "hcloud_server" "app-server" {
   name        = "app-server"
   image       = "ubuntu-24.04"
@@ -48,6 +53,7 @@ resource "hcloud_server" "app-server" {
 
   user_data = templatefile("${path.module}/cloud-init.tpl", {
     tailscale_authkey = var.tskey_auth
+    tailscale_host    = var.ts_host
   })
 
   ssh_keys = [

@@ -1,0 +1,40 @@
+name: Manual Deploy via Tailscale
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_ip:
+        description: 'Target Server IP (Tailscale IP or MagicDNS name)'
+        required: true
+        type: string
+        default: '100.x.y.z' 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:deployment 
+
+      - name: Check server reachability
+        run: |
+          echo "Target IP: ${{ inputs.server_ip }}"
+          ping -c 3 ${{ inputs.server_ip }}
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ inputs.server_ip }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Successfully connected to ${{ inputs.server_ip }}"
+            cd /opt/infrastructure
+            docker compose pull
+            docker compose up -d

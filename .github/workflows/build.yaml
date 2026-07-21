@@ -115,3 +115,8 @@ jobs:
           title: "chore(config): bump image tags to ${{ github.sha }}"
           branch: "chore/auto-bump-tags"
           sign-commits: true
+
+      - name: Enable auto-merge
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: gh pr merge --auto --squash "chore/auto-bump-tags"

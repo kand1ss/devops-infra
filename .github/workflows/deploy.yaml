@@ -41,5 +41,12 @@ jobs:
           script: |
             echo "Successfully connected to $SERVER_IP"
             cd /opt/infrastructure
+            git pull
+            python3 deploy/shared/render_env.py
             docker compose pull
             docker compose up -d
+      
+      - name: Enable auto-merge
+        run: gh pr merge --auto --squash "chore/auto-bump-tags"
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}

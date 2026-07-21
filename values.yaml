@@ -1,6 +1,6 @@
 domain: shortclick.duckdns.org
 shortener:
-  image_tag: "008687fdb9c1f130f3fad4155e19424a40e9a900"
+  image_tag: 4eba1bede785ce2250444174afaced52960a558d
   db:
     user: shortener_service
     name: shortener_db

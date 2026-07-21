@@ -18,16 +18,16 @@ jobs:
         run: |
           APPS=$(find apps -mindepth 1 -maxdepth 1 -type d -exec test -e '{}/Dockerfile' \; -print | xargs -n1 basename)
           
-          echo "filters<<" >> "$GITHUB_OUTPUT"
+          echo "filters<<EOF" >> "$GITHUB_OUTPUT"
           for app in $APPS; do
             echo "$app: 'apps/$app/**'" >> "$GITHUB_OUTPUT"
           done
-          echo "" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - uses: dorny/paths-filter@v3
         id: filter
         with:
-          filters: ${{ steps.filter.outputs.filters != '' && steps.filter.outputs.filters || steps.set-matrix.outputs.filters }}
+          filters: ${{ steps.set-matrix.outputs.filters }}
 
   build:
     needs: detect-changes

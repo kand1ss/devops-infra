@@ -23,18 +23,23 @@ jobs:
           tags: tag:deployment 
 
       - name: Check server reachability
+        env:
+          SERVER_IP: ${{ inputs.server_ip }}
         run: |
-          echo "Target IP: ${{ inputs.server_ip }}"
-          ping -c 3 ${{ inputs.server_ip }}
+          echo "Target IP: $SERVER_IP"
+          ping -c 3 $SERVER_IP
 
       - name: Deploy via SSH
+        env:
+          SERVER_IP: ${{ inputs.server_ip }}
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ inputs.server_ip }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: SERVER_IP
           script: |
-            echo "Successfully connected to ${{ inputs.server_ip }}"
+            echo "Successfully connected to $SERVER_IP"
             cd /opt/infrastructure
             docker compose pull
             docker compose up -d

@@ -115,6 +115,3 @@ jobs:
           title: "chore(config): bump image tags to ${{ github.sha }}"
           branch: "chore/auto-bump-tags"
           sign-commits: true
-          add-paths: |
-              values.yaml
-              apps/*/values.yaml

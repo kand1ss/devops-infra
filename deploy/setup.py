@@ -8,9 +8,6 @@ NEW_USER = os.getenv("USER", "default")
 SSH_PUBLIC_KEY = os.getenv(
     "SSH_PUBLIC_KEY", os.path.expanduser("~/.ssh/id_rsa.pub")
 )
-TAILSCALE_AUTHKEY = os.getenv("TAILSCALE_AUTHKEY")
-if not TAILSCALE_AUTHKEY:
-    raise RuntimeError("TAILSCALE_AUTHKEY env var is required")
 
 SUDO_PASSWORD_HASH = os.getenv("SUDO_PASSWORD_HASH")
 if not SUDO_PASSWORD_HASH:

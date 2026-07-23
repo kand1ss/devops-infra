@@ -1,4 +1,5 @@
 import os
+
 from pyinfra.operations import apt, files, server
 
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))

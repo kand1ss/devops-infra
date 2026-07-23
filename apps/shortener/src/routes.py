@@ -1,14 +1,15 @@
+import logging
+
+import services
+from config import settings
+from database import get_session
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-from pydantic import HttpUrl
-from database import get_session
-from schemas import CreateLink, CreateLinkOut
 from models import Link
-from config import settings
-from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import HttpUrl
+from schemas import CreateLink, CreateLinkOut
 from sqlalchemy import select, text
-import services
-import logging
+from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger("api_logger")
 router = APIRouter()

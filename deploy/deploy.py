@@ -1,8 +1,9 @@
-import os
 import base64
-from pyinfra.operations import server 
-from dotenv import load_dotenv
+import os
 from pathlib import Path
+
+from dotenv import load_dotenv
+from pyinfra.operations import server
 
 load_dotenv()
 
@@ -61,9 +62,7 @@ server.shell(
 
 server.shell(
     name="Render .env file from values.yaml on remote server",
-    commands=[
-        f"cd {REMOTE_PROJECT_DIR} && python3 deploy/shared/render_env.py"
-    ],
+    commands=[f"cd {REMOTE_PROJECT_DIR} && python3 deploy/shared/render_env.py"],
 )
 
 server.shell(

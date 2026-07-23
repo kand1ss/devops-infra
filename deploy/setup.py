@@ -1,6 +1,7 @@
 import os
-from pyinfra.operations import apt, server, systemd, files
+
 from dotenv import load_dotenv
+from pyinfra.operations import apt, files, server, systemd
 
 load_dotenv()
 

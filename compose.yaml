@@ -189,8 +189,9 @@ services:
     hostname: services-gate
     restart: unless-stopped
     environment:
-      TSKEY_AUTH: ${TSKEY_AUTH}
+      TS_AUTHKEY: ${TSKEY_AUTH}
       TS_STATE_DIR: /var/lib/tailscale
+      TS_HOSTNAME: services-gate
     volumes:
       - tailscale_data:/var/lib/tailscale
     cap_add:
@@ -203,8 +204,6 @@ services:
       - sh
       - -c
       - |
-      - tailscaled --state=/var/lib/tailscale/tailscaled.state &
-        tailscale up --authkey=${TSKEY_AUTH} --hostname=services-gate
         tailscale serve --bg --https=443 --set-path=/grafana http://grafana:3000
         wait
     depends_on:

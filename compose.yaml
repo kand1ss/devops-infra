@@ -1,10 +1,19 @@
 volumes:
+  tailscale_data:
   grafana_data:
   prometheus_data:
   alloy_data:
   loki_data:
   shortener_pgdata:
 
+networks:
+  private:
+    driver: bridge
+  monitoring:
+    driver: bridge
+  app:
+    driver: bridge
+    
 secrets:
   db_password:
     file: ./secrets/db_password.txt
@@ -18,6 +27,8 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    networks:
+      - app
     volumes:
       - ./nginx/entrypoint.sh:/entrypoint.sh:ro
       - ./nginx/templates:/etc/nginx/templates:ro
@@ -69,6 +80,8 @@ services:
       POSTGRES_DB: ${SHORTENER_DB_NAME}
     secrets:
       - db_password
+    networks:
+      - app
     volumes:
       - shortener_pgdata:/var/lib/postgresql/data
     expose:
@@ -86,6 +99,9 @@ services:
       context: ./apps/shortener
     container_name: shortener-service
     restart: unless-stopped
+    networks:
+      - app
+      - monitoring
     environment:
       BASE_URL: https://${DOMAIN}
       DB_USER: ${SHORTENER_DB_USER}
@@ -112,6 +128,8 @@ services:
     user: "10001:10001"
     container_name: loki
     restart: unless-stopped
+    networks:
+      - monitoring
     volumes:
       - ./monitoring/loki-config.yaml:/etc/loki/config.yaml:ro
       - loki_data:/loki
@@ -133,6 +151,8 @@ services:
       - "9090"
     command:
       - --config.file=/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -154,11 +174,42 @@ services:
     restart: unless-stopped
     expose:
       - "8080"
+    networks:
+      - monitoring
     volumes:
       - /:/rootfs:ro
       - /var/run/:/var/run:rw
       - /sys/:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+
+
+  tailscale-gate:
+    image: tailscale/tailscale:v1.98.9
+    container_name: tailscale-gate
+    hostname: services-gate
+    restart: unless-stopped
+    environment:
+      TSKEY_AUTH: ${TSKEY_AUTH}
+      TS_STATE_DIR: /var/lib/tailscale
+    volumes:
+      - tailscale_data:/var/lib/tailscale
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      - private
+    command:
+      - sh
+      - -c
+      - |
+      - tailscaled --state=/var/lib/tailscale/tailscaled.state &
+        tailscale up --authkey=${TSKEY_AUTH} --hostname=services-gate
+        tailscale serve --bg --https=443 --set-path=/grafana http://grafana:3000
+        wait
+    depends_on:
+      grafana:
+        condition: service_started
 
     
   grafana:
@@ -167,6 +218,9 @@ services:
     ports:
       - "127.0.0.1:3000:3000"
     restart: unless-stopped
+    networks:
+      - private
+      - monitoring
     volumes:
       - ./monitoring/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - grafana_data:/var/lib/grafana
@@ -181,6 +235,8 @@ services:
     image: grafana/alloy:v1.17.1
     container_name: alloy
     restart: unless-stopped
+    networks:
+      - monitoring
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./monitoring/config.alloy:/etc/alloy/config.alloy:ro

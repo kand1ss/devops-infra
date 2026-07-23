@@ -18,6 +18,10 @@ GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 if not GITHUB_TOKEN:
     raise RuntimeError("GITHUB_TOKEN env var is required")
 
+TSKEY_AUTH = os.getenv("TSKEY_AUTH")
+if not TSKEY_AUTH:
+    raise RuntimeError("TSKEY_AUTH env var is required")
+
 LOCAL_VALUES_FILE = Path(ROOT_DIR) / "values.yaml"
 LOCAL_ENV_FILE = Path(ROOT_DIR) / ".env"
 
@@ -68,14 +72,6 @@ server.shell(
         f"cd {REMOTE_PROJECT_DIR} && docker compose pull",
         f"cd {REMOTE_PROJECT_DIR} && docker compose up -d --remove-orphans",
     ],
-    _sudo=True,
-)
-
-server.shell(
-    name="Reset and apply Tailscale serve rule",
-    commands=[
-        "tailscale serve reset",
-        "tailscale serve --bg --https=443 --set-path=/grafana http://127.0.0.1:3000",
-    ],
+    _env={"TSKEY_AUTH": TSKEY_AUTH},
     _sudo=True,
 )

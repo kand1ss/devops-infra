@@ -58,6 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           REMOTE_REPO_NAME: "devops-infra"
+          TSKEY_AUTH: ${{ secrets.TS_INFRA_KEY }}
         run: |
           pyinfra ${{ inputs.server_ip }} deploy/deploy.py \
             --user ${{ secrets.SERVER_USER }} \

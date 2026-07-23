@@ -29,17 +29,43 @@ jobs:
           echo "Target IP: $SERVER_IP"
           ping -c 3 $SERVER_IP
 
-      - name: Deploy via SSH
-        env:
-          SERVER_IP: ${{ inputs.server_ip }}
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          host: ${{ inputs.server_ip }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: SERVER_IP
-          script: |
-            echo "Successfully connected to $SERVER_IP"
-            cd /opt/infrastructure
-            docker compose pull
-            docker compose up -d
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install -r deploy/requirements.txt
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: read
+
+      - name: Write SSH key to temp file
+        run: |
+          umask 077
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+
+      - name: Run PyInfra Deploy
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          REMOTE_REPO_NAME: "devops-infra"
+          SERVER_IP: ${{ inputs.server_ip }}
+          TSKEY_AUTH: ${{ secrets.TS_INFRA_KEY }}
+        run: |
+          pyinfra "$SERVER_IP" deploy/deploy.py \
+            --user ${{ secrets.SERVER_USER }} \
+            --key /tmp/deploy_key
+
+      - name: Clean up SSH key
+        if: always()
+        run: rm -f /tmp/deploy_key

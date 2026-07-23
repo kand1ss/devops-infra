@@ -1,7 +1,8 @@
-from sqlalchemy import URL
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import SecretStr
 from pathlib import Path
+
+from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from sqlalchemy import URL
 
 
 class Settings(BaseSettings):

@@ -1,8 +1,9 @@
+import logging
+import secrets
+
 from models import Link
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-import secrets
-import logging
 
 
 class LinkService:

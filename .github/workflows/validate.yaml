@@ -24,7 +24,7 @@ jobs:
       - name: Validate Python code
         run: |
           pip install ruff
-          ruff check apps/ deploy/
+          ruff check --select E,F apps/ deploy/
 
       - uses: hashicorp/setup-terraform@v3
 

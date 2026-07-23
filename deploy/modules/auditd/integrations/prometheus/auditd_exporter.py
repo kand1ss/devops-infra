@@ -11,11 +11,11 @@ counter по ключам, пишет в node_exporter textfile collector direct
 """
 
 import json
-import subprocess
 import re
+import subprocess
 import sys
-from pathlib import Path
 from datetime import datetime, timedelta
+from pathlib import Path
 
 TEXTFILE_DIR = Path("/var/lib/node_exporter/textfile_collector")
 OUTPUT_FILE = TEXTFILE_DIR / "audit_events.prom"

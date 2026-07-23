@@ -47,6 +47,7 @@ jobs:
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: read
 
       - name: Write SSH key to temp file
         run: |
@@ -58,9 +59,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
           REMOTE_REPO_NAME: "devops-infra"
+          SERVER_IP: ${{ inputs.server_ip }}
           TSKEY_AUTH: ${{ secrets.TS_INFRA_KEY }}
         run: |
-          pyinfra ${{ inputs.server_ip }} deploy/deploy.py \
+          pyinfra "$SERVER_IP" deploy/deploy.py \
             --user ${{ secrets.SERVER_USER }} \
             --key /tmp/deploy_key
 

@@ -10,7 +10,6 @@ from sqlalchemy import select, text
 import services
 import logging
 
-
 logger = logging.getLogger("api_logger")
 router = APIRouter()
 
